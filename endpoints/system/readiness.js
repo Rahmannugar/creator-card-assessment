@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const { createHandler } = require('@app-core/server');
 
 module.exports = createHandler({
-  path: '/readyz',
+  path: '/live/ready',
   method: 'get',
   middlewares: [],
   async handler(rc, helpers) {
