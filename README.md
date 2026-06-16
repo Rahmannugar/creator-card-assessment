@@ -35,7 +35,6 @@ Create a `.env` file from `.env.example` and add your MongoDB URL:
 ```env
 PORT=3003
 APP_NAME=creator-card-api
-APP_BASE_URL=http://localhost:3003
 MONGODB_URI=<your-mongodb-url>
 ```
 
