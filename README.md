@@ -62,8 +62,8 @@ npm start
 Health checks:
 
 ```bash
-curl http://localhost:3003/live/health
-curl http://localhost:3003/live/ready
+curl http://localhost:3003/health/live
+curl http://localhost:3003/health/ready
 ```
 
 Create a card:

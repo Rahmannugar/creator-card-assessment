@@ -190,10 +190,10 @@ Business errors:
 
 ## System Endpoints
 
-`GET /live/health`
+`GET /health/live`
 
 Returns basic process health.
 
-`GET /live/ready`
+`GET /health/ready`
 
 Returns readiness based on MongoDB connection state.
