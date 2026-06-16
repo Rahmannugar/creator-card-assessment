@@ -10,6 +10,9 @@ const expressEnums = require('./enums');
  * @property {string} [JSONLimit] - The max size allowed to be passed in the request body as JSON.
  * @property {boolean} [enableCors] - Optional parameter used to configure whether or not the server should allow CORS requests.
  * @property {boolean} [generateRequestIds] - Optional parameter indicating whether or not unique request IDs should be generated for every request that hits the server.
+ * @property {number} [requestTimeoutMillis] - Maximum time allowed for a full request.
+ * @property {number} [headersTimeoutMillis] - Maximum time allowed to receive request headers.
+ * @property {number} [keepAliveTimeoutMillis] - Time to keep idle keep-alive sockets open.
  */
 
 /**
@@ -58,6 +61,9 @@ function Server(serverConfig = {}) {
     port = 8811,
     JSONLimit = '50mb',
     enableCors = false,
+    requestTimeoutMillis = 30000,
+    headersTimeoutMillis = 35000,
+    keepAliveTimeoutMillis = 5000,
     // generateRequestIds = false
   } = serverConfig;
 
@@ -230,7 +236,7 @@ function Server(serverConfig = {}) {
       } catch (error) {
         const statusCode = !error.isApplicationError
           ? 500
-          : errorCodeMappings[error.errorCode] || 400;
+          : error.context?.httpStatus || errorCodeMappings[error.errorCode] || 400;
 
         const requestLog = createRequestLog(expressRequest);
 
@@ -246,8 +252,9 @@ function Server(serverConfig = {}) {
         responseComponents.body.message = error.isApplicationError
           ? error.message
           : 'Some error occured.';
+        responseComponents.body.code = error.context?.code;
         responseComponents.body.errors = error.details || undefined;
-        responseComponents.body.data = error.context;
+        responseComponents.body.data = error.context?.code ? undefined : error.context;
 
         expressResponse.status(responseComponents.statusCode).json(responseComponents.body); // Todo: Add a callback config that can be used to handle this in a custom way.
       } finally {
@@ -289,9 +296,14 @@ function Server(serverConfig = {}) {
         message: 'Some error occurred.',
       });
     });
-    app.listen(port, () => {
+    const httpServer = app.listen(port, () => {
       appLogger(`Listening at port ${port}`);
     });
+    httpServer.requestTimeout = requestTimeoutMillis;
+    httpServer.headersTimeout = headersTimeoutMillis;
+    httpServer.keepAliveTimeout = keepAliveTimeoutMillis;
+
+    return httpServer;
   }
 
   return {

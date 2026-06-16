@@ -22,8 +22,10 @@ async function createConnection(connectionConfig) {
   const { uri = process.env.MONGODB_URI, isNotDefault } = connectionConfig;
   if (uri) {
     const connectionOptions = {
-      // useNewUrlParser: true,
-      // useUnifiedTopology: true,
+      serverSelectionTimeoutMS:
+        Number.parseInt(process.env.MONGODB_SERVER_SELECTION_TIMEOUT_MS, 10) || 10000,
+      socketTimeoutMS: Number.parseInt(process.env.MONGODB_SOCKET_TIMEOUT_MS, 10) || 45000,
+      maxPoolSize: Number.parseInt(process.env.MONGODB_MAX_POOL_SIZE, 10) || 10,
     };
     try {
       let connection;
