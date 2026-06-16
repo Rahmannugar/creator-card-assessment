@@ -4,7 +4,6 @@ const { ACCESS_TYPES, BUSINESS_ERROR_CODES } = require('./constants');
 const { isDraft, serializeCreatorCard, throwBusinessError } = require('./helpers');
 
 async function getCreatorCard(serviceData) {
-  // Deleted cards should be indistinguishable from missing cards publicly.
   const card = await CreatorCardRepository.findOne({
     query: { slug: serviceData.slug, deleted: null },
   });
@@ -13,7 +12,6 @@ async function getCreatorCard(serviceData) {
     throwBusinessError(CreatorCardMessages.NOT_FOUND, BUSINESS_ERROR_CODES.NOT_FOUND, 404);
   }
 
-  // Public access checks must stay in the assessment's required order.
   if (isDraft(card)) {
     throwBusinessError(CreatorCardMessages.NOT_FOUND, BUSINESS_ERROR_CODES.DRAFT_NOT_FOUND, 404);
   }
@@ -34,7 +32,7 @@ async function getCreatorCard(serviceData) {
     );
   }
 
-  // Public retrieval must not leak the creator-held delete credential.
+  // Keep creator_reference out of public responses; it is needed for deletion.
   return serializeCreatorCard(card, { includeCreatorReference: false });
 }
 

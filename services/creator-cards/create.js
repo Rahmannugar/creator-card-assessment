@@ -62,12 +62,10 @@ async function generateAvailableSlug(title) {
   const baseSlug = buildSlugFromTitle(title);
   let slug = baseSlug;
 
-  // Short titles need a suffix so generated slugs still satisfy the minimum length.
   if (slug.length < 5) {
     slug = `${slug || 'card'}-${randomSuffix()}`;
   }
 
-  // Auto-generated slugs may collide, so keep trying bounded suffixes.
   async function findAvailableSlug(candidateSlug, attempt = 0) {
     const existingCard = await CreatorCardRepository.findOne({ query: { slug: candidateSlug } });
 
@@ -84,12 +82,10 @@ async function generateAvailableSlug(title) {
 }
 
 async function createCreatorCard(serviceData) {
-  // Let VSL handle shape checks before applying service defaults.
   const data = validator.validate(serviceData, parsedCreateCardSpec);
   data.access_type = data.access_type || ACCESS_TYPES.PUBLIC;
   data.links = data.links || [];
 
-  // Keep custom business rules close to the use case that owns them.
   if (data.slug && !isValidSlug(data.slug)) {
     throwBusinessError(
       'slug can only contain letters, numbers, hyphens and underscores',
@@ -116,7 +112,6 @@ async function createCreatorCard(serviceData) {
     });
   }
 
-  // Client-provided slugs are never silently changed.
   if (data.slug) {
     await ensureSlugIsAvailable(data.slug);
   } else {
@@ -130,7 +125,6 @@ async function createCreatorCard(serviceData) {
   let createdCard;
 
   try {
-    // The unique index is the final guard against concurrent slug races.
     createdCard = await CreatorCardRepository.create(data);
   } catch (error) {
     if (error.errorCode === ERROR_CODE.DUPLRCRD) {

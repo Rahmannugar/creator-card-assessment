@@ -11,10 +11,8 @@ const deleteCardSpec = `root {
 const parsedDeleteCardSpec = validator.parse(deleteCardSpec);
 
 async function deleteCreatorCard(serviceData) {
-  // Destructive actions require the creator-held reference.
   const data = validator.validate(serviceData, parsedDeleteCardSpec);
 
-  // Already-deleted cards continue to behave like missing cards.
   const card = await CreatorCardRepository.findOne({
     query: { slug: serviceData.slug, deleted: null },
   });
@@ -23,20 +21,17 @@ async function deleteCreatorCard(serviceData) {
     throwBusinessError(CreatorCardMessages.NOT_FOUND, BUSINESS_ERROR_CODES.NOT_FOUND, 404);
   }
 
-  // A public slug alone is not enough authority to delete a card.
   if (card.creator_reference !== data.creator_reference) {
     throwBusinessError(CreatorCardMessages.NOT_FOUND, BUSINESS_ERROR_CODES.NOT_FOUND, 404);
   }
 
   const deletedAt = Date.now();
 
-  // Soft delete preserves the record while removing it from public lookup.
   await CreatorCardRepository.updateOne({
     query: { slug: serviceData.slug, creator_reference: data.creator_reference, deleted: null },
     updateValues: { deleted: deletedAt },
   });
 
-  // Delete returns the creator-facing shape, including the reference.
   return serializeCreatorCard(
     {
       ...card,

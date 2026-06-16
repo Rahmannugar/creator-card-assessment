@@ -4,20 +4,19 @@ Creator Card API is a Node.js/Express service for publishing shareable creator p
 
 This project follows the provided Resilience 17 backend template structure: endpoint handlers live in `endpoints/`, business logic lives in `services/`, persistence goes through `repository/`, and MongoDB models live in `models/`.
 
-## Assessment Notes
+System design: https://excalidraw.com/#json=_4gxaioyXyN9HX3w-Tupb,o5sQkolJvG7nK6t5jFexTA
 
-- Required routes are mounted at the root of the base URL with no version prefix:
+## Implementation Notes
+
+- Routes are mounted at the root of the base URL with no version prefix:
   - `POST /creator-cards`
   - `GET /creator-cards/:slug`
   - `DELETE /creator-cards/:slug`
-- Public retrieval never returns `access_code`.
-- Public retrieval also omits `creator_reference`. This is intentional: `creator_reference` acts as the creator-held delete credential, so a public visitor who can retrieve a card by slug cannot copy that response and delete the card.
-- Creation and deletion responses do return `creator_reference`, because those flows are creator-facing.
-- Documents use MongoDB `_id` internally, but all API responses serialize it as `id`.
-- Deleted cards are soft-deleted and are no longer retrievable through the public GET endpoint.
-- The service includes startup MongoDB validation, HTTP timeouts, health/readiness checks, and graceful shutdown.
-
-Excalidraw design: https://excalidraw.com/#json=_4gxaioyXyN9HX3w-Tupb,o5sQkolJvG7nK6t5jFexTA
+- Public retrieval omits `access_code` and `creator_reference`.
+- Creation and deletion return `creator_reference` for creator-facing flows.
+- MongoDB documents keep `_id` internally; API responses expose `id`.
+- Deleted cards are soft-deleted and excluded from public retrieval.
+- The runtime includes MongoDB startup validation, HTTP timeouts, health checks, and graceful shutdown.
 
 ## API Documentation
 

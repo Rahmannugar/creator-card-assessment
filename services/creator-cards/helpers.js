@@ -35,7 +35,6 @@ function isValidAccessCode(value) {
 function ensureAccessCodeRules(data) {
   const accessType = data.access_type || ACCESS_TYPES.PUBLIC;
 
-  // Private cards must be protected by a creator-provided access code.
   if (accessType === ACCESS_TYPES.PRIVATE && !data.access_code) {
     throwBusinessError(
       CreatorCardMessages.ACCESS_CODE_REQUIRED,
@@ -44,7 +43,6 @@ function ensureAccessCodeRules(data) {
     );
   }
 
-  // Public cards must not store unnecessary access secrets.
   if (accessType === ACCESS_TYPES.PUBLIC && data.access_code) {
     throwBusinessError(
       CreatorCardMessages.ACCESS_CODE_PUBLIC_FORBIDDEN,
@@ -53,7 +51,6 @@ function ensureAccessCodeRules(data) {
     );
   }
 
-  // Validate the conditional secret after deciding it is allowed.
   if (data.access_code && !isValidAccessCode(data.access_code)) {
     throwBusinessError(
       'access_code must be exactly 6 alphanumeric characters',
@@ -86,7 +83,6 @@ function serializeCreatorCard(card, options = {}) {
     deleted: card.deleted || null,
   };
 
-  // Creator-facing responses may include secrets that public retrieval omits.
   if (options.includeAccessCode) {
     serialized.access_code = card.access_code || null;
   }
